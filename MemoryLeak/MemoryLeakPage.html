@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visually Dynamic Memory Leak Example</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            height: 100%;
+            overflow-y: scroll;
+            position: relative;
+            background: #111;
+            color: white;
+            padding: 20px;
+        }
+        .leak-element {
+            width: 30px;
+            height: 30px;
+            position: absolute;
+            border-radius: 50%;
+            transition: background-color 0.5s ease;
+        }
+    </style>
+    <script>
+        let objectsArray = [];
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function startMemoryLeak() {
+            let count = 0;
+            setInterval(() => {
+                const newElement = document.createElement('div');
+                newElement.className = 'leak-element';
+                newElement.style.top = `${Math.random() * window.innerHeight}px`;
+                newElement.style.left = `${Math.random() * window.innerWidth}px`;
+                newElement.style.backgroundColor = getRandomColor();
+                newElement.textContent = ++count;
+
+                const complexObject = {
+                    element: newElement,
+                    largeData: new Array(10000).join('MemoryLeak '),
+                    timeStamp: Date.now()
+                };
+
+                document.getElementById('container').appendChild(newElement);
+                objectsArray.push(complexObject);
+            }, 10);
+        }
+
+        window.onload = function() {
+            document.getElementById('startLeak').addEventListener('click', function() {
+                startMemoryLeak();
+            });
+        };
+    </script>
+</head>
+<body>
+    <div id="container">
+        <button id="startLeak">Start Memory Leak</button>
+    </div>
+</body>
+</html>
