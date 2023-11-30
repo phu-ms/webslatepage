@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visually Dynamic Memory Leak Example</title>
+    <title>Memory Leak with Web Worker</title>
     <style>
+        /* Basic styling */
         body, html {
             margin: 0;
             padding: 0;
@@ -30,6 +31,33 @@
     </style>
     <script>
         let objectsArray = [];
+        let dataSize = 10000; // Starting size of the large data
+
+        // Check if Web Workers are supported
+        if (window.Worker) {
+            // Create a new Web Worker
+            const myWorker = new Worker('worker.js');
+
+            function startMemoryLeak() {
+                let count = 0;
+                setInterval(() => {
+                    const newElement = document.createElement('div');
+                    newElement.className = 'leak-element';
+                    newElement.style.top = `${Math.random() * window.innerHeight}px`;
+                    newElement.style.left = `${Math.random() * window.innerWidth}px`;
+                    newElement.style.backgroundColor = getRandomColor();
+                    newElement.textContent = ++count;
+
+                    // Send data to the worker for memory allocation
+                    myWorker.postMessage({ action: 'allocate', size: dataSize });
+
+                    dataSize *= 1.1; // Increase the size of data progressively
+
+                    document.getElementById('container').appendChild(newElement);
+                    objectsArray.push(newElement);
+                }, 10);
+            }
+        }
 
         function getRandomColor() {
             const letters = '0123456789ABCDEF';
@@ -38,27 +66,6 @@
                 color += letters[Math.floor(Math.random() * 16)];
             }
             return color;
-        }
-
-        function startMemoryLeak() {
-            let count = 0;
-            setInterval(() => {
-                const newElement = document.createElement('div');
-                newElement.className = 'leak-element';
-                newElement.style.top = `${Math.random() * window.innerHeight}px`;
-                newElement.style.left = `${Math.random() * window.innerWidth}px`;
-                newElement.style.backgroundColor = getRandomColor();
-                newElement.textContent = ++count;
-
-                const complexObject = {
-                    element: newElement,
-                    largeData: new Array(10000).join('MemoryLeak '),
-                    timeStamp: Date.now()
-                };
-
-                document.getElementById('container').appendChild(newElement);
-                objectsArray.push(complexObject);
-            }, 10);
         }
 
         window.onload = function() {
