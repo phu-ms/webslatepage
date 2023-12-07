@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intense Memory Leak with Web Worker</title>
+    <title>Memory Leak with Web Worker</title>
     <style>
         /* Basic styling */
         body, html {
@@ -32,10 +32,10 @@
     <script>
         let objectsArray = [];
         let dataSize = 10000; // Starting size of the large data
-        let deepData = {};
 
         // Check if Web Workers are supported
         if (window.Worker) {
+            // Create a new Web Worker
             const myWorker = new Worker('worker.js');
 
             function startMemoryLeak() {
@@ -48,16 +48,13 @@
                     newElement.style.backgroundColor = getRandomColor();
                     newElement.textContent = ++count;
 
-                    // Deepening the data structure
-                    deepData = { data: new Array(dataSize).join('MemoryLeak '), next: deepData };
-
                     // Send data to the worker for memory allocation
                     myWorker.postMessage({ action: 'allocate', size: dataSize });
 
                     dataSize *= 1.1; // Increase the size of data progressively
 
                     document.getElementById('container').appendChild(newElement);
-                    objectsArray.push({ element: newElement, deepData: deepData });
+                    objectsArray.push(newElement);
                 }, 10);
             }
         }
